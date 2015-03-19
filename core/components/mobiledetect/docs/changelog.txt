@@ -1,0 +1,5 @@
+Changelog for MobileDetect.
+
+1.0.0-beta
+==============
+- Initial version
