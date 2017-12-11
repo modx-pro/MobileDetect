@@ -1,2 +1,4 @@
 .idea
 config.core.php
+/core/components/mobiledetect/composer.lock
+/core/components/mobiledetect/vendor/

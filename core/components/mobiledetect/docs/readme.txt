@@ -1,10 +1,7 @@
 --------------------
 MobileDetect
 --------------------
-Author: John Doe <john@doe.com>
+Author: Vasily Naumkin <bezumkin@yandex.ru>
 --------------------
 
-A basic Extra for MODx Revolution.
-
-Feel free to suggest ideas/improvements/bugs on GitHub:
-http://github.com/username/MobileDetect/issues
+The MobileDetect output filter for Fenom and MODX.

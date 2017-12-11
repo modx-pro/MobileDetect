@@ -4,20 +4,18 @@
 define('PKG_NAME', 'MobileDetect');
 define('PKG_NAME_LOWER', strtolower(PKG_NAME));
 
-define('PKG_VERSION', '1.0.1');
+define('PKG_VERSION', '2.0.0');
 define('PKG_RELEASE', 'pl');
 define('PKG_AUTO_INSTALL', true);
 define('PKG_NAMESPACE_PATH', '{core_path}components/' . PKG_NAME_LOWER . '/');
 
 /* define paths */
 if (isset($_SERVER['MODX_BASE_PATH'])) {
-	define('MODX_BASE_PATH', $_SERVER['MODX_BASE_PATH']);
-}
-elseif (file_exists(dirname(dirname(dirname(__FILE__))) . '/core')) {
-	define('MODX_BASE_PATH', dirname(dirname(dirname(__FILE__))) . '/');
-}
-else {
-	define('MODX_BASE_PATH', dirname(dirname(dirname(dirname(__FILE__)))) . '/');
+    define('MODX_BASE_PATH', $_SERVER['MODX_BASE_PATH']);
+} elseif (file_exists(dirname(dirname(dirname(__FILE__))) . '/core')) {
+    define('MODX_BASE_PATH', dirname(dirname(dirname(__FILE__))) . '/');
+} else {
+    define('MODX_BASE_PATH', dirname(dirname(dirname(dirname(__FILE__)))) . '/');
 }
 define('MODX_CORE_PATH', MODX_BASE_PATH . 'core/');
 define('MODX_MANAGER_PATH', MODX_BASE_PATH . 'manager/');
@@ -37,9 +35,9 @@ define('MODX_ASSETS_URL', MODX_BASE_URL . 'assets/');
 define('BUILD_SETTING_UPDATE', false);
 //define('BUILD_CHUNK_UPDATE', false);
 
-//define('BUILD_SNIPPET_UPDATE', true);
+define('BUILD_SNIPPET_UPDATE', true);
 define('BUILD_PLUGIN_UPDATE', true);
-define('BUILD_TEMPLATE_UPDATE', false);
+//define('BUILD_TEMPLATE_UPDATE', false);
 //define('BUILD_EVENT_UPDATE', true);
 //define('BUILD_POLICY_UPDATE', true);
 //define('BUILD_POLICY_TEMPLATE_UPDATE', true);
@@ -51,7 +49,7 @@ define('BUILD_PLUGIN_STATIC', false);
 define('BUILD_TEMPLATE_STATIC', false);
 
 $BUILD_RESOLVERS = array(
-	//'tables',
-	//'chunks',
-	//'setup',
+    //'tables',
+    //'chunks',
+    //'setup',
 );

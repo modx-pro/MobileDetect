@@ -1,8 +1,15 @@
 Changelog for MobileDetect.
 
+2.0.0-pl
+==============
+- Mobile Detect included via composer
+- Added snippet MobileDetect
+- Updated Mobile Detect core to version 2.8.28
+- Test template is no longer installed by default
+
 1.0.1-pl
 ==============
-- Updated Mobile-Detect core.
+- Updated Mobile-Detect core
 
 1.0.0-beta
 ==============
