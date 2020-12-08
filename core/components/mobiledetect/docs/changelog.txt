@@ -1,5 +1,9 @@
 Changelog for MobileDetect.
 
+2.0.1-pl
+==============
+- Mobile Detect 2.8.34
+
 2.0.0-pl
 ==============
 - Mobile Detect included via composer
