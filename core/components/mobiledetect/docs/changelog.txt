@@ -1,5 +1,9 @@
 Changelog for MobileDetect.
 
+2.0.2-pl
+==============
+- Add Fenom blocks {mobile}{/mobile}, {desktop}{/desktop}, {standard}{/standard}, {phone}{/phone} and {tablet}{/tablet}
+
 2.0.1-pl
 ==============
 - Mobile Detect 2.8.34
