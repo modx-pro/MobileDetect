@@ -8,6 +8,7 @@ $tmp = array(
         'description' => '',
         'events' => array(
             'OnWebPagePrerender' => array(),
+            'pdoToolsOnFenomInit' => array(),
         ),
     ),
 );
