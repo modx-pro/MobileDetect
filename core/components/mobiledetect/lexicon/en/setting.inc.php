@@ -7,7 +7,7 @@ $_lang['setting_md_disable_plugin_desc'] = 'If enabled, the plugin will not be l
 $_lang['setting_md_use_cookie'] = 'Remember the browser';
 $_lang['setting_md_use_cookie_desc'] = 'Save the type of browser to the user cookie.';
 $_lang['setting_md_tablet_is_standard'] = 'Tablets as standard browsers';
-$_lang['setting_md_tablet_is_standard_desc'] = 'Enable this option to read the tablets as desktop browsers and show them the content of the "standard" tags.';
+$_lang['setting_md_tablet_is_standard_desc'] = 'Enable this option to treat tablets as desktop browsers for HTML tags, snippet, Fenom and the service API.';
 
 $_lang['setting_md_force_browser_variable'] = 'Variable of the mode';
 $_lang['setting_md_force_browser_variable_desc'] = 'The plugin will search this variable in the $_GET to select the operation mode.';

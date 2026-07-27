@@ -55,7 +55,7 @@ Namespace: `mobiledetect`, area: `md_main`.
 |------|--------------|----------|
 | `md_disable_plugin` | `0` | Отключить плагин |
 | `md_use_cookie` | `1` | Запоминать выбор в cookie |
-| `md_tablet_is_standard` | `0` | Планшеты как desktop |
+| `md_tablet_is_standard` | `0` | Планшеты как desktop (теги, сниппет, Fenom и API) |
 | `md_force_browser_variable` | `browser` | GET-параметр для принудительного режима |
 | `md_force_browser_standard` | `standard` | Значение для desktop |
 | `md_force_browser_tablet` | `tablet` | Значение для tablet |
@@ -96,6 +96,8 @@ Namespace: `mobiledetect`, area: `md_main`.
 Возвращает `1`, если текущий тип устройства совпадает с параметром `input` (`standard`, `tablet`, `mobile`).
 
 ### 3. Fenom (pdoTools)
+
+В Fenom-шаблонах имена блоков `{mobile}`, `{standard}` и т.д. нельзя писать в `<code>{standard}</code>` как текст — Fenom воспримет это как открытие блока. В документации внутри шаблона используйте HTML-сущности: `&#123;standard&#125;`.
 
 Блоки:
 

@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - System setting `md_disable_plugin` default aligned with transport settings: plugin is enabled by default (`false`).
+- `md_tablet_is_standard` now remaps tablet → standard for snippet, Fenom blocks/modifier and service API (`resolveDevice`, `isDesktop`, `isTablet`), not only HTML tags.
 
 ### Breaking Changes
 - Requires PHP 8.2+ (mobiledetectlib 4.11.x).

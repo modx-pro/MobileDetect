@@ -89,7 +89,7 @@ class MobileDetect
         }
 
         if (!empty($forced) && $forced !== strtolower($this->config['force_browser_detect'])) {
-            $device = $this->normalizeDeviceType($forced);
+            $device = $this->applyTabletIsStandard($this->normalizeDeviceType($forced));
             $this->deviceType = $device;
             $this->saveSettings($device);
 
@@ -109,6 +109,7 @@ class MobileDetect
             $device = $this->config['force_browser_standard'];
         }
 
+        $device = $this->applyTabletIsStandard($device);
         $this->deviceType = $device;
         $this->saveSettings($device);
 
@@ -174,6 +175,25 @@ class MobileDetect
         );
 
         return isset($map[$device]) ? $map[$device] : $device;
+    }
+
+
+    /**
+     * When md_tablet_is_standard is on, treat tablet as desktop for API, snippet and Fenom.
+     *
+     * @param string $device
+     *
+     * @return string
+     */
+    protected function applyTabletIsStandard($device)
+    {
+        if (!empty($this->config['tablet_is_standard'])
+            && strtolower((string)$device) === strtolower($this->config['force_browser_tablet'])
+        ) {
+            return $this->config['force_browser_standard'];
+        }
+
+        return $device;
     }
 
 
@@ -290,9 +310,10 @@ class MobileDetect
                 $this->saveSettings($mode);
                 break;
             case $this->config['force_browser_tablet']:
-                if (empty($this->config['tablet_is_standard'])) {
-                    $content = $this->deleteNode($content, 'standard_node', 'tablet_node');
+                if (!empty($this->config['tablet_is_standard'])) {
+                    return $this->parseDocument($content, $this->config['force_browser_standard']);
                 }
+                $content = $this->deleteNode($content, 'standard_node', 'tablet_node');
                 $content = $this->deleteNode($content, 'mobile_node', 'tablet_node');
                 $this->saveSettings($mode);
                 break;
