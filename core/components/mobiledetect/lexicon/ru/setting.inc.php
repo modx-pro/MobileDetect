@@ -7,7 +7,7 @@ $_lang['setting_md_disable_plugin_desc'] = 'Если эта опция вклю�
 $_lang['setting_md_use_cookie'] = 'Запоминать браузер';
 $_lang['setting_md_use_cookie_desc'] = 'Сохранять в куку тип браузера пользователя.';
 $_lang['setting_md_tablet_is_standard'] = 'Планшеты как стандартные браузеры';
-$_lang['setting_md_tablet_is_standard_desc'] = 'Включите эту опцию, чтобы считать планшеты десктопными браузерами и выводить для них контент тега "standard".';
+$_lang['setting_md_tablet_is_standard_desc'] = 'Включите эту опцию, чтобы считать планшеты десктопными браузерами для HTML-тегов, сниппета, Fenom и service API.';
 
 $_lang['setting_md_force_browser_variable'] = 'Переменная указания режима';
 $_lang['setting_md_force_browser_variable_desc'] = 'Эту переменную плагин будет искать в $_GET для выбора режима работы.';
