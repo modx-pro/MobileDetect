@@ -1,13 +1,19 @@
 <?php
 
+use Detection\MobileDetect as MobileDetectLib;
+
 class MobileDetect
 {
     /** @var modX $modx */
     public $modx;
     /** @var array $config */
     public $config;
-    /** @var Mobile_Detect $detector */
+    /** @var MobileDetectLib|null $detector */
     protected $detector;
+    /** @var string|null */
+    protected $deviceType;
+    /** @var bool */
+    public $fenomReady = false;
 
 
     /**
@@ -25,7 +31,7 @@ class MobileDetect
             'session_cookie_httponly' => $this->modx->getOption('session_cookie_httponly', null, true),
             'session_cookie_domain' => $this->modx->getOption('session_cookie_domain', null, ''),
 
-            'disable_plugin' => $this->modx->getOption('md_disable_plugin', null, true),
+            'disable_plugin' => $this->modx->getOption('md_disable_plugin', null, false),
             'use_cookie' => $this->modx->getOption('md_use_cookie', null, true),
             'tablet_is_standard' => $this->modx->getOption('md_tablet_is_standard', null, false),
 
@@ -47,15 +53,15 @@ class MobileDetect
     /**
      * Get detector instance
      *
-     * @return Mobile_Detect
+     * @return MobileDetectLib
      */
     public function getDetector()
     {
-        if (!class_exists('Mobile_Detect')) {
+        if (!class_exists(MobileDetectLib::class)) {
             require_once dirname(__FILE__) . '/vendor/autoload.php';
         }
         if (empty($this->detector)) {
-            $this->detector = new Mobile_Detect();
+            $this->detector = new MobileDetectLib();
         }
 
         return $this->detector;
@@ -63,35 +69,157 @@ class MobileDetect
 
 
     /**
+     * Resolve device type from forced value, cookie or detector
+     *
+     * @param string $forced
+     *
+     * @return string standard|tablet|mobile
+     */
+    public function resolveDevice($forced = '')
+    {
+        $forced = strtolower(trim((string)$forced));
+
+        if ($forced === strtolower($this->config['force_browser_detect'])) {
+            $this->clearSettings();
+            $forced = '';
+        }
+
+        if (empty($forced)) {
+            $forced = strtolower((string)$this->getSettings());
+        }
+
+        if (!empty($forced) && $forced !== strtolower($this->config['force_browser_detect'])) {
+            $device = $this->normalizeDeviceType($forced);
+            $this->deviceType = $device;
+            $this->saveSettings($device);
+
+            return $device;
+        }
+
+        if ($this->deviceType !== null) {
+            return $this->deviceType;
+        }
+
+        $detector = $this->getDetector();
+        if ($detector->isMobile()) {
+            $device = $detector->isTablet()
+                ? $this->config['force_browser_tablet']
+                : $this->config['force_browser_mobile'];
+        } else {
+            $device = $this->config['force_browser_standard'];
+        }
+
+        $this->deviceType = $device;
+        $this->saveSettings($device);
+
+        return $device;
+    }
+
+
+    /**
+     * @return string standard|tablet|mobile
+     */
+    public function getDeviceType()
+    {
+        if ($this->deviceType === null) {
+            $this->resolveDevice();
+        }
+
+        return (string)$this->deviceType;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isMobile()
+    {
+        $device = $this->getDeviceType();
+
+        return $device === $this->config['force_browser_mobile']
+            || $device === $this->config['force_browser_tablet'];
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isTablet()
+    {
+        return $this->getDeviceType() === $this->config['force_browser_tablet'];
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isDesktop()
+    {
+        return $this->getDeviceType() === $this->config['force_browser_standard'];
+    }
+
+
+    /**
+     * @param string $device
+     *
+     * @return string
+     */
+    protected function normalizeDeviceType($device)
+    {
+        $device = strtolower($device);
+        $map = array(
+            strtolower($this->config['force_browser_standard']) => $this->config['force_browser_standard'],
+            strtolower($this->config['force_browser_tablet']) => $this->config['force_browser_tablet'],
+            strtolower($this->config['force_browser_mobile']) => $this->config['force_browser_mobile'],
+        );
+
+        return isset($map[$device]) ? $map[$device] : $device;
+    }
+
+
+    /**
+     * Cookies are HTTP-only; skip in CLI and after output started.
+     */
+    protected function canPersistCookie(): bool
+    {
+        return !empty($this->config['use_cookie'])
+            && PHP_SAPI !== 'cli'
+            && !headers_sent();
+    }
+
+
+    /**
      * Save user settings to cookie
      *
-     * @param $value
+     * @param string $value
      */
     public function saveSettings($value)
     {
-        if (!empty($this->config['use_cookie'])) {
-            setcookie(
-                $this->config['force_browser_variable'],
-                $value,
-                time() + $this->config['session_cookie_lifetime'],
-                $this->config['session_cookie_path'],
-                $this->config['session_cookie_domain'],
-                $this->config['session_cookie_secure'],
-                $this->config['session_cookie_httponly']
-            );
+        if (!$this->canPersistCookie()) {
+            return;
         }
+
+        setcookie(
+            $this->config['force_browser_variable'],
+            $value,
+            time() + $this->config['session_cookie_lifetime'],
+            $this->config['session_cookie_path'],
+            $this->config['session_cookie_domain'],
+            $this->config['session_cookie_secure'],
+            $this->config['session_cookie_httponly']
+        );
     }
 
 
     /**
      * Return user settings from cookie
      *
-     * @return mixed
+     * @return string
      */
     public function getSettings()
     {
         if ($this->config['use_cookie'] && !empty($_COOKIE[$this->config['force_browser_variable']])) {
-            return $_COOKIE[$this->config['force_browser_variable']];
+            return (string)$_COOKIE[$this->config['force_browser_variable']];
         }
 
         return '';
@@ -103,28 +231,32 @@ class MobileDetect
      */
     public function clearSettings()
     {
-        if (!empty($this->config['use_cookie'])) {
-            setcookie(
-                $this->config['force_browser_variable'],
-                '',
-                time() - 3600,
-                $this->config['session_cookie_path'],
-                $this->config['session_cookie_domain'],
-                $this->config['session_cookie_secure'],
-                $this->config['session_cookie_httponly']
-            );
+        $this->deviceType = null;
+
+        if (!$this->canPersistCookie()) {
+            return;
         }
+
+        setcookie(
+            $this->config['force_browser_variable'],
+            '',
+            time() - 3600,
+            $this->config['session_cookie_path'],
+            $this->config['session_cookie_domain'],
+            $this->config['session_cookie_secure'],
+            $this->config['session_cookie_httponly']
+        );
     }
 
 
     /**
      * Delete not needed tags
      *
-     * @param $content
-     * @param $delete_node
-     * @param $preserve_node
+     * @param string $content
+     * @param string $delete_node
+     * @param string $preserve_node
      *
-     * @return mixed
+     * @return string
      */
     function deleteNode($content, $delete_node = '', $preserve_node = '')
     {
@@ -144,10 +276,10 @@ class MobileDetect
 
 
     /**
-     * @param $content
+     * @param string $content
      * @param string $mode
      *
-     * @return mixed
+     * @return string
      */
     public function parseDocument($content, $mode = '')
     {
@@ -173,24 +305,23 @@ class MobileDetect
                 $this->clearSettings();
 
                 return $this->parseDocument($content, 'no_settings');
-                break;
             default:
                 if ($mode != 'no_settings') {
-                    if ($mode = $this->getSettings()) {
-                        return $this->parseDocument($content, $mode);
+                    $saved = $this->getSettings();
+                    if (!empty($saved) && strtolower($saved) !== strtolower((string)$mode)) {
+                        return $this->parseDocument($content, $saved);
                     }
                 }
-                /** @var Mobile_Detect $detector */
                 $detector = $this->getDetector();
                 if ($detector->isMobile()) {
                     if ($detector->isTablet()) {
                         return $this->parseDocument($content, $this->config['force_browser_tablet']);
-                    } else {
-                        return $this->parseDocument($content, $this->config['force_browser_mobile']);
                     }
-                } else {
-                    return $this->parseDocument($content, $this->config['force_browser_standard']);
+
+                    return $this->parseDocument($content, $this->config['force_browser_mobile']);
                 }
+
+                return $this->parseDocument($content, $this->config['force_browser_standard']);
         }
 
         return $content;

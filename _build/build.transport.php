@@ -8,6 +8,10 @@ set_time_limit(0);
 
 header('Content-Type:text/html;charset=utf-8');
 
+if (!defined('MODX_API_MODE')) {
+    define('MODX_API_MODE', true);
+}
+
 require_once 'build.config.php';
 // Refresh model
 if (file_exists('build.model.php')) {
@@ -33,15 +37,28 @@ $sources = array(
 );
 unset($root);
 
+if (file_exists(MODX_CORE_PATH . 'vendor/autoload.php')) {
+    require_once MODX_CORE_PATH . 'vendor/autoload.php';
+}
 require_once MODX_CORE_PATH . 'model/modx/modx.class.php';
 require_once $sources['build'] . '/includes/functions.php';
 
+$vendorAutoload = $sources['source_core'] . '/vendor/autoload.php';
+if (!file_exists($vendorAutoload)) {
+    echo "FATAL: Vendor not found at {$vendorAutoload}. Run: cd core/components/mobiledetect && composer install\n";
+    exit(1);
+}
+
 $modx = new modX();
-$modx->initialize('mgr');
+$modx->initialize('connectors');
 $modx->setLogLevel(modX::LOG_LEVEL_INFO);
 $modx->setLogTarget('ECHO');
 $modx->getService('error', 'error.modError');
-$modx->loadClass('transport.modPackageBuilder', '', false, true);
+mobiledetectBootstrapTransport($modx);
+if (!class_exists('modPackageBuilder')) {
+    echo "FATAL: modPackageBuilder is not available. Use MODX 2.8+ or MODX 3.x with a valid MODX_BASE_PATH.\n";
+    exit(1);
+}
 if (!XPDO_CLI_MODE) {
     echo '<pre>';
 }
@@ -307,9 +324,11 @@ if (defined('PKG_AUTO_INSTALL') && PKG_AUTO_INSTALL) {
     $sig = explode('-', $signature);
     $versionSignature = explode('.', $sig[1]);
 
+    $transportPackageClass = mobiledetectTransportPackageClass();
+
     /** @var modTransportPackage $package */
-    if (!$package = $modx->getObject('transport.modTransportPackage', array('signature' => $signature))) {
-        $package = $modx->newObject('transport.modTransportPackage');
+    if (!$package = $modx->getObject($transportPackageClass, array('signature' => $signature))) {
+        $package = $modx->newObject($transportPackageClass);
         $package->set('signature', $signature);
         $package->fromArray(array(
             'created' => date('Y-m-d h:i:s'),
