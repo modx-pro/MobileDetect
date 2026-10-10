@@ -71,10 +71,10 @@ jobs:
         run: |
           version="${TAG#v}"
           version="${version%-pl}"
-          awk -v ver="$version" '
-            $0 ~ "^## \\[" ver "(-pl)?\\]" { print; show = 1; next }
-            show && /^## \\[/ { exit }
-            show { print }
+          awk -v heading="## [$version-pl]" '
+            index($0, heading) == 1 { show = 1 }
+            show && seen && index($0, "## [") == 1 { exit }
+            show { print; seen = 1 }
           ' core/components/mobiledetect/docs/changelog.txt > _packages/notes.md
           grep -q '[^[:space:]]' _packages/notes.md
 
