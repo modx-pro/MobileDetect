@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1-pl]
+
+### Fixed
+- Transport package is built on MODX 2.8.8. Release 2.1.0-pl was built on MODX 3, so MODX 2.8 could not load `xPDO\Transport\xPDOObjectVehicle` and the install stopped before files were unpacked.
+- GitHub release workflow installs MODX 2.8.8, builds the zip there, and fails the job if the manifest still contains a namespaced vehicle class.
+
+PHP 8.2+ is still required (`mobiledetectlib` 4.11). MODX 2.8 with PHP 7.4 stays on 2.0.2-pl.
+
 ## [2.1.0-pl]
 
 ### Added
