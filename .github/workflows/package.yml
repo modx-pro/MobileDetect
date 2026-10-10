@@ -1,0 +1,104 @@
+name: Package
+
+# One zip, built on MODX 2. A package built on MODX 2 installs on MODX 2 and
+# MODX 3. A package built on MODX 3 does not install on MODX 2.
+
+on:
+  workflow_call:
+    outputs:
+      signature:
+        description: Package signature, mobiledetect-X.Y.Z-pl
+        value: ${{ jobs.build.outputs.signature }}
+
+env:
+  MODX_VERSION: 2.8.8-pl
+  MODX_ROOT: /tmp/modx
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build on MODX 2.8.8
+    runs-on: ubuntu-latest
+    outputs:
+      signature: ${{ steps.version.outputs.signature }}
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: modx
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          extensions: curl, gd, mbstring, mysqli, pdo_mysql, simplexml, zip
+          coverage: none
+
+      - id: version
+        run: php _build/ci/version.php >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/modx-${{ env.MODX_VERSION }}.zip
+          key: modx-${{ env.MODX_VERSION }}
+
+      - name: Install MODX
+        run: |
+          _build/ci/modx-download.sh "$MODX_VERSION" "$MODX_ROOT" ~/modx-"$MODX_VERSION".zip
+          _build/ci/modx-setup.sh
+
+      - name: Install component dependencies
+        working-directory: core/components/mobiledetect
+        run: composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs
+
+      - name: Build the package
+        working-directory: _build
+        env:
+          MODX_BASE_PATH: /tmp/modx/
+        run: |
+          php build.transport.php
+          test -f "/tmp/modx/core/packages/${{ steps.version.outputs.signature }}.transport.zip"
+
+      - name: Reject a MODX 3 vehicle class
+        env:
+          SIGNATURE: ${{ steps.version.outputs.signature }}
+        run: |
+          python3 - <<'PY'
+          import os, sys, zipfile
+          zpath = "/tmp/modx/core/packages/" + os.environ["SIGNATURE"] + ".transport.zip"
+          needle = b"xPDO\\Transport\\xPDOObjectVehicle"
+          with zipfile.ZipFile(zpath) as zf:
+              manifests = [n for n in zf.namelist() if n.endswith("manifest.php") or n == "manifest"]
+              if not manifests:
+                  print("ERROR: no manifest in transport zip", file=sys.stderr)
+                  sys.exit(1)
+              for name in manifests:
+                  if needle in zf.read(name):
+                      print("ERROR: namespaced vehicle class in " + name, file=sys.stderr)
+                      sys.exit(1)
+                  print("OK: " + name)
+          PY
+          mkdir -p "$GITHUB_WORKSPACE/_packages"
+          cp "/tmp/modx/core/packages/${SIGNATURE}.transport.zip" "$GITHUB_WORKSPACE/_packages/"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: _packages/*.transport.zip
+          if-no-files-found: error
