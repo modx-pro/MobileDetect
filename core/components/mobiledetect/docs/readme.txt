@@ -7,6 +7,7 @@ Author: Vasily Naumkin <bezumkin@yandex.ru>
 Mobile device detection for MODX Revolution 2.8+ and 3.x.
 
 Requirements: PHP 8.2+, mobiledetect/mobiledetectlib 4.11.x.
+The transport zip must be built on MODX 2.8 so it installs on both 2.8 and 3.x.
 
 Features:
 - HTML tags <standard>, <tablet>, <mobile> filtered on OnWebPagePrerender

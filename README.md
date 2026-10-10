@@ -18,7 +18,7 @@ MODX-экстра для определения типа устройства (d
 
 ### Package Manager
 
-1. Скачайте transport-пакет `mobiledetect-2.1.0-pl.transport.zip`.
+1. Скачайте transport-пакет `mobiledetect-2.1.1-pl.transport.zip`.
 2. Установите через **Extras → Installer**.
 
 ### Вручную
@@ -27,25 +27,21 @@ MODX-экстра для определения типа устройства (d
 
 ### Сборка из исходников
 
-Сборка transport-пакета работает на **MODX 2.8+** и **MODX 3.x**. Нужна установленная копия MODX: скрипт подключается к `{core_path}` и кладёт zip в `{core_path}packages/`.
+Собирайте transport на **MODX 2.8**. Такой zip ставится и на 2.8, и на 3.x. Сборка на MODX 3 пишет в манифест `xPDO\Transport\xPDOObjectVehicle`, и установщик 2.8 пакет не принимает. Скрипт кладёт zip в `{core_path}packages/`. Запускайте его из `_build`: он подключает `build.config.php` из текущей директории.
 
 ```bash
 cd core/components/mobiledetect
 composer install
 
-cd ../../..
-php _build/build.transport.php
-```
-
-Если репозиторий лежит вне дерева MODX, укажите корень сайта:
-
-```bash
-MODX_BASE_PATH=/path/to/modx php _build/build.transport.php
+cd ../../../_build
+MODX_BASE_PATH=/path/to/modx php build.transport.php
 ```
 
 Перед сборкой `composer install` обязателен: без `vendor/` transport-пакет не соберётся.
 
-Результат: `{core_path}packages/mobiledetect-2.1.0-pl.transport.zip` — установка через **Extras → Installer**.
+Результат: `{core_path}packages/mobiledetect-2.1.1-pl.transport.zip` — установка через **Extras → Installer**.
+
+Собирайте пакет на MODX 2.8 (PHP 8.1+ для самого установщика MODX). Zip, собранный на MODX 3, на 2.8 не ставится: в манифесте остаётся `xPDO\Transport\xPDOObjectVehicle`. Релиз на GitHub собирает workflow на MODX 2.8.8. На сайте по-прежнему нужен PHP 8.2+.
 
 ## Настройки
 
