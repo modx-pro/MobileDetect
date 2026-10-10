@@ -1,0 +1,77 @@
+name: Integration
+
+# Install the zip from the package job on MODX 2 and MODX 3.
+# PHP 7.4 is not in the matrix: 2.1.x needs PHP 8.2 at runtime, and the
+# MODX 2.8.8 installer in CI runs on PHP 8.1.
+
+on:
+  workflow_call:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  modx:
+    name: MODX ${{ matrix.modx }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - modx: 2.8.8-pl
+            php: "8.1"
+          - modx: 3.2.4-pl
+            php: "8.3"
+
+    env:
+      MODX_ROOT: /tmp/modx
+      MODX_CORE_PATH: /tmp/modx/core/
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: modx
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, gd, mbstring, mysqli, pdo_mysql, simplexml, zip
+          coverage: none
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/modx-${{ matrix.modx }}.zip
+          key: modx-${{ matrix.modx }}
+
+      - name: Install MODX
+        env:
+          MODX_VERSION: ${{ matrix.modx }}
+        run: |
+          _build/ci/modx-download.sh "$MODX_VERSION" "$MODX_ROOT" ~/modx-"$MODX_VERSION".zip
+          _build/ci/modx-setup.sh
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+          path: _packages
+
+      - name: Install the package
+        run: php _build/ci/install.php _packages/*.transport.zip
+
+      - name: Smoke
+        run: php _build/ci/smoke.php

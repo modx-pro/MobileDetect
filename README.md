@@ -41,7 +41,7 @@ MODX_BASE_PATH=/path/to/modx php build.transport.php
 
 Результат: `{core_path}packages/mobiledetect-2.1.1-pl.transport.zip` — установка через **Extras → Installer**.
 
-Собирайте пакет на MODX 2.8 (PHP 8.1+ для самого установщика MODX). Zip, собранный на MODX 3, на 2.8 не ставится: в манифесте остаётся `xPDO\Transport\xPDOObjectVehicle`. Релиз на GitHub собирает workflow на MODX 2.8.8. На сайте по-прежнему нужен PHP 8.2+.
+Собирайте пакет на MODX 2.8 (PHP 8.1 для самого установщика MODX). Zip, собранный на MODX 3, на 2.8 не ставится: в манифесте остаётся `xPDO\Transport\xPDOObjectVehicle`. Релиз на GitHub собирает zip на MODX 2.8.8 и ставит этот же архив на MODX 2.8.8 и MODX 3 перед публикацией. На сайте по-прежнему нужен PHP 8.2+. PHP 7.4 этот пакет не запускает.
 
 ## Настройки
 
